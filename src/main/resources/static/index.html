@@ -1,17 +1,521 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Semilleros</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registro de Semilleros</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f6fb;
+    --card:#ffffff;
+    --ink:#1b2236;
+    --muted:#6b7491;
+    --line:#e3e7f2;
+    --brand:#4f46e5;
+    --brand-2:#7c3aed;
+    --ok:#059669;
+    --ok-bg:#d1fae5;
+    --danger:#dc2626;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(31,41,90,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+    /* mitad izquierda clara, mitad derecha (de borde a borde) café */
+    background:linear-gradient(to right, var(--bg) 50%, #5a3a28 50%);
+    color:var(--ink);
+    min-height:100vh;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    padding:28px 20px 8px;
+    max-width:1400px;margin:0 auto;
+    display:flex;align-items:center;gap:14px;
+  }
+  .logo{
+    width:46px;height:46px;border-radius:14px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    display:grid;place-items:center;color:#fff;font-size:24px;
+    box-shadow:0 8px 20px rgba(79,70,229,.35);
+  }
+  header h1{font-size:1.5rem;font-weight:800;letter-spacing:-.02em}
+  header p{color:var(--muted);font-size:.9rem}
+
+  /* ---------- Layout 50/50 ---------- */
+  main{
+    max-width:1400px;margin:0 auto;padding:20px 20px 48px;
+    display:grid;grid-template-columns:1fr 1fr;gap:110px;align-items:start;
+  }
+  @media(max-width:960px){ main{grid-template-columns:1fr;padding:16px} header{padding:20px 16px 0} }
+
+  .panel{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow);
+  }
+  .panel-head{
+    padding:20px 24px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+  }
+  .panel-head h2{font-size:1.1rem;font-weight:700}
+  .panel-head small{color:var(--muted)}
+  .panel-body{padding:24px}
+
+  /* ---------- Form ---------- */
+  fieldset{border:none;margin-bottom:26px}
+  legend{
+    font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--brand);margin-bottom:14px;
+    display:flex;align-items:center;gap:8px;width:100%;
+  }
+  legend::after{content:"";flex:1;height:1px;background:var(--line)}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:560px){.grid-2{grid-template-columns:1fr}}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  .field label{font-size:.82rem;font-weight:600}
+  .field label .req{color:var(--danger)}
+  input,textarea,select{
+    font:inherit;font-size:.92rem;color:var(--ink);
+    padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;
+    background:#fbfcff;transition:.15s;width:100%;
+  }
+  textarea{resize:vertical;min-height:76px}
+  input:focus,textarea:focus,select:focus{
+    outline:none;border-color:var(--brand);background:#fff;
+    box-shadow:0 0 0 4px rgba(79,70,229,.12);
+  }
+  .error{color:var(--danger);font-size:.75rem;display:none}
+  .field.invalid input,.field.invalid textarea{border-color:var(--danger)}
+  .field.invalid .error{display:block}
+
+  /* dynamic rows */
+  .row-item{
+    display:flex;gap:10px;align-items:center;margin-bottom:10px;
+  }
+  .row-item input{flex:1}
+  .integrante{
+    border:1.5px dashed var(--line);border-radius:12px;padding:14px;margin-bottom:12px;
+    background:#fafbff;position:relative;
+  }
+  .integrante .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .integrante .top b{font-size:.82rem;color:var(--muted)}
+  .btn{
+    font:inherit;font-weight:600;font-size:.88rem;cursor:pointer;border:none;
+    padding:11px 18px;border-radius:10px;transition:.15s;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;
+    box-shadow:0 8px 18px rgba(79,70,229,.3);width:100%;padding:14px;font-size:.95rem;
+  }
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 12px 24px rgba(79,70,229,.38)}
+  .btn-primary:disabled{opacity:.6;cursor:wait;transform:none}
+  .btn-ghost{background:#eef0ff;color:var(--brand)}
+  .btn-ghost:hover{background:#e0e4ff}
+  .btn-icon{
+    background:transparent;color:var(--muted);width:34px;height:34px;padding:0;border-radius:8px;font-size:1.1rem;
+  }
+  .btn-icon:hover{background:#fee2e2;color:var(--danger)}
+  .lider-label{
+    display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:600;cursor:pointer;
+  }
+  .lider-label input{width:auto;accent-color:var(--brand)}
+
+  /* ---------- Lista ---------- */
+  .list{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;
+    isolation:isolate;   /* necesario para que las semillas queden detrás de las tarjetas */
+  }
+  .sem-card{
+    border:1px solid var(--line);border-radius:14px;padding:18px;
+    background:#ffffff;color:var(--ink);
+    position:relative;overflow:visible;transition:.2s;
+  }
+
+  /* ---------- Semillas que se asoman por las esquinas ---------- */
+  .sem-card::after{
+    content:"";
+    position:absolute;
+    display:none;                      /* solo se muestra en algunas tarjetas */
+    width:110px;height:110px;          /* tamaño de la imagen */
+    background:var(--semillas) center/contain no-repeat;   /* la imagen la asigna el JS a cada tarjeta */
+    pointer-events:none;
+    z-index:-1;                        /* detrás de la tarjeta */
+  }
+  /* 1ª, 4ª, 7ª... tarjeta: esquina superior derecha */
+  .sem-card:nth-child(3n+1)::after{
+    display:block;top:-48px;right:-44px;transform:rotate(25deg);
+  }
+  /* 3ª, 6ª, 9ª... tarjeta: esquina inferior izquierda */
+  .sem-card:nth-child(3n)::after{
+    display:block;bottom:-48px;left:-44px;transform:rotate(-140deg);
+  }
+  /* las tarjetas 2ª, 5ª, 8ª... quedan sin semillas */
+  /* se usa "top" en vez de "transform" para no romper el z-index de las semillas */
+  .sem-card:hover{top:-3px;box-shadow:var(--shadow)}
+  .sem-id{font-size:.72rem;color:var(--muted);font-weight:600}
+  .sem-sigla{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin:6px 0 14px}
+  .sem-meta{display:flex;justify-content:space-between;align-items:center}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;
+    background:#eef0ff;color:var(--brand);padding:5px 10px;border-radius:999px;
+  }
+  .badge{
+    font-size:.7rem;font-weight:700;letter-spacing:.04em;
+    background:var(--ok-bg);color:var(--ok);padding:5px 10px;border-radius:999px;
+  }
+  .empty,.loading{
+    grid-column:1/-1;text-align:center;color:var(--muted);padding:50px 10px;font-size:.92rem;
+  }
+  .empty .big{font-size:2.4rem;display:block;margin-bottom:8px}
+
+  /* ---------- Panel derecho café ---------- */
+  .panel-cafe{
+    background:transparent;
+    border:none;
+    box-shadow:none;
+    color:#fff;
+  }
+  @media(max-width:960px){
+    /* en móvil las secciones van apiladas: el café se aplica a la sección */
+    body{background:var(--bg)}
+    .panel-cafe{background:#5a3a28;border-radius:var(--radius)}
+  }
+  .panel-cafe .panel-head{border-bottom-color:rgba(255,255,255,.15)}
+  .panel-cafe .panel-head small{color:#e7d5c4}
+  .panel-cafe .btn-ghost{background:rgba(255,255,255,.15);color:#fff}
+  .panel-cafe .btn-ghost:hover{background:rgba(255,255,255,.25)}
+  .panel-cafe .empty,.panel-cafe .loading{color:#e7d5c4}
+
+  /* ---------- Toast ---------- */
+  #toast{
+    position:fixed;bottom:24px;left:50%;transform:translate(-50%,120px);
+    background:var(--ink);color:#fff;padding:13px 22px;border-radius:12px;
+    font-size:.9rem;font-weight:500;transition:.3s;z-index:50;box-shadow:var(--shadow);
+  }
+  #toast.show{transform:translate(-50%,0)}
+  #toast.ok{background:var(--ok)}
+  #toast.err{background:var(--danger)}
+</style>
 </head>
 <body>
 
-    <!-- Visible content of your webpage goes here -->
-    <h1>Hello, World!</h1>
+<header>
+  <div>
+    <h1>Registro de Semilleros</h1>
+    <p>Crea y consulta los semilleros de investigación</p>
+  </div>
+</header>
 
-    <!-- Link external JavaScript file (placed before closing body for performance) -->
-    <script src="script.js"></script>
+<main>
+
+  <!-- ================= IZQUIERDA: FORMULARIO ================= -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Nuevo semillero</h2>
+    </div>
+    <div class="panel-body">
+      <form id="semilleroForm" novalidate>
+
+        <!-- Datos generales -->
+        <fieldset>
+          <legend>Datos generales</legend>
+          <div class="grid-2">
+            <div class="field">
+              <label for="nombre">Nombre <span class="req">*</span></label>
+              <input id="nombre" name="nombre" placeholder="Semillero de Aplicaciones Web">
+              <span class="error">El nombre del semillero es obligatorio</span>
+            </div>
+            <div class="field">
+              <label for="sigla">Sigla <span class="req">*</span></label>
+              <input id="sigla" name="sigla" placeholder="SAW-01">
+              <span class="error">La sigla del semillero es obligatoria</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="grupoInvestigacion">Grupo de investigación <span class="req">*</span></label>
+            <input id="grupoInvestigacion" name="grupoInvestigacion" placeholder="Grupo de Ingeniería de Software">
+            <span class="error">El grupo de investigación es obligatorio</span>
+          </div>
+          <div class="field">
+            <label for="mision">Misión</label>
+            <textarea id="mision" name="mision" placeholder="Promover la investigación aplicada"></textarea>
+          </div>
+          <div class="field">
+            <label for="vision">Visión</label>
+            <textarea id="vision" name="vision" placeholder="Desarrollar soluciones universitarias"></textarea>
+          </div>
+          <div class="field">
+            <label for="objetivoGeneral">Objetivo general</label>
+            <textarea id="objetivoGeneral" name="objetivoGeneral" placeholder="Fortalecer competencias investigativas"></textarea>
+          </div>
+        </fieldset>
+
+        <!-- Director -->
+        <fieldset>
+          <legend>Docente director</legend>
+          <!-- Ajusta estos campos a tu DirectorRequest -->
+          <div class="grid-2">
+            <div class="field">
+              <label for="dirNombre">Nombre completo <span class="req">*</span></label>
+              <input id="dirNombre" name="dirNombre" placeholder="María Pérez">
+              <span class="error">Campo obligatorio</span>
+            </div>
+            <div class="field">
+              <label for="dirCorreo">Correo <span class="req">*</span></label>
+              <input id="dirCorreo" name="dirCorreo" type="email" placeholder="maria@universidad.edu.co">
+              <span class="error">Campo obligatorio</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Líneas -->
+        <fieldset>
+          <legend>Líneas de investigación</legend>
+          <div id="lineasContainer"></div>
+          <span class="error" id="lineasError" style="display:none">Debe existir al menos una línea de investigación</span>
+          <button type="button" class="btn btn-ghost" id="addLinea">+ Agregar línea</button>
+        </fieldset>
+
+        <!-- Integrantes -->
+        <fieldset>
+          <legend>Integrantes</legend>
+          <div id="integrantesContainer"></div>
+          <span class="error" id="integrantesError" style="display:none">Debe existir al menos un integrante</span>
+          <button type="button" class="btn btn-ghost" id="addIntegrante">+ Agregar integrante</button>
+        </fieldset>
+
+        <button type="submit" class="btn btn-primary" id="submitBtn">Registrar semillero</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ================= DERECHA: LISTADO ================= -->
+  <section class="panel panel-cafe">
+    <div class="panel-head">
+      <div>
+        <h2>Semilleros registrados</h2>
+        <small id="countLabel">Cargando…</small>
+      </div>
+      <button type="button" class="btn btn-ghost" id="refreshBtn">↻ Actualizar</button>
+    </div>
+    <div class="panel-body">
+      <div class="list" id="semillerosList">
+        <div class="loading">Cargando semilleros…</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+/* =====================================================
+   CONFIGURACIÓN: cambia por la URL de tu API
+   ===================================================== */
+const API_URL = 'http://localhost:8080/api/semilleros';
+
+/* ---------- Utilidades ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+
+function toast(msg, type = '') {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.className = '', 3200);
+}
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- Líneas dinámicas ---------- */
+function addLinea(value = '') {
+  const row = document.createElement('div');
+  row.className = 'row-item';
+  row.innerHTML = `
+    <input class="linea-input" placeholder="Ej: Aplicaciones Web" value="${escapeHtml(value)}">
+    <button type="button" class="btn btn-icon" title="Quitar">✕</button>`;
+  $('button', row).onclick = () => row.remove();
+  $('#lineasContainer').appendChild(row);
+}
+
+/* ---------- Integrantes dinámicos ---------- */
+/* Ajusta estos campos a tu IntegranteRequest */
+function addIntegrante() {
+  const n = $$('.integrante').length + 1;
+  const box = document.createElement('div');
+  box.className = 'integrante';
+  box.innerHTML = `
+    <div class="top"><b>Integrante</b>
+      <button type="button" class="btn btn-icon" title="Quitar">✕</button>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Código estudiantil</label><input class="i-codigo" placeholder="2026001"></div>
+      <div class="field"><label>Nombre</label><input class="i-nombre" placeholder="Ana Ejemplo"></div>
+    </div>
+    <div class="field"><label>Programa académico</label><input class="i-programa" placeholder="Ingeniería de Sistemas"></div>
+    <label class="lider-label"><input type="radio" name="lider" class="i-lider"> Líder del semillero</label>`;
+  $('button', box).onclick = () => { box.remove(); renumber(); };
+  $('#integrantesContainer').appendChild(box);
+  renumber();
+}
+function renumber() {
+  const boxes = $$('.integrante');
+  boxes.forEach((b, i) => $('.top b', b).textContent = `Integrante #${i + 1}`);
+  // siempre debe haber exactamente un líder marcado
+  if (boxes.length && !boxes.some(b => $('.i-lider', b).checked)) {
+    $('.i-lider', boxes[0]).checked = true;
+  }
+}
+
+/* ---------- Recoger datos (misma forma que SemilleroRequest) ---------- */
+function collectData() {
+  return {
+    nombre: $('#nombre').value.trim(),
+    sigla: $('#sigla').value.trim(),
+    grupoInvestigacion: $('#grupoInvestigacion').value.trim(),
+    mision: $('#mision').value.trim(),
+    vision: $('#vision').value.trim(),
+    objetivoGeneral: $('#objetivoGeneral').value.trim(),
+    director: {
+      nombre: $('#dirNombre').value.trim(),
+      correo: $('#dirCorreo').value.trim()
+    },
+    lineas: $$('.linea-input').map(i => i.value.trim()).filter(Boolean),
+    integrantes: $$('.integrante').map(b => ({
+      codigo: $('.i-codigo', b).value.trim(),
+      nombre: $('.i-nombre', b).value.trim(),
+      programa: $('.i-programa', b).value.trim(),
+      esLider: $('.i-lider', b).checked
+    }))
+  };
+}
+
+/* ---------- Validación básica en cliente ---------- */
+function validate(d) {
+  let ok = true;
+  const mark = (id, bad) => {
+    $('#' + id).closest('.field').classList.toggle('invalid', bad);
+    if (bad) ok = false;
+  };
+  mark('nombre', !d.nombre);
+  mark('sigla', !d.sigla);
+  mark('grupoInvestigacion', !d.grupoInvestigacion);
+  mark('dirNombre', !d.director.nombre);
+  mark('dirCorreo', !d.director.correo);
+
+  const lErr = d.lineas.length === 0;
+  $('#lineasError').style.display = lErr ? 'block' : 'none';
+  let iMsg = '';
+  if (d.integrantes.length === 0) iMsg = 'Debe existir al menos un integrante';
+  else if (d.integrantes.some(i => !i.codigo || !i.nombre || !i.programa))
+    iMsg = 'Completa código, nombre y programa de cada integrante';
+  else if (d.integrantes.filter(i => i.esLider).length !== 1)
+    iMsg = 'Debe haber exactamente un líder';
+  const iErr = iMsg !== '';
+  $('#integrantesError').textContent = iMsg;
+  $('#integrantesError').style.display = iErr ? 'block' : 'none';
+  return ok && !lErr && !iErr;
+}
+
+/* ---------- POST: crear semillero ---------- */
+async function crearSemillero(e) {
+  e.preventDefault();
+  const data = collectData();
+  if (!validate(data)) { toast('Revisa los campos obligatorios', 'err'); return; }
+
+  const btn = $('#submitBtn');
+  btn.disabled = true; btn.textContent = 'Registrando…';
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error('Respuesta del servidor:', res.status, err);
+      // ErrorResponse del backend: { mensaje, detalles: [] }
+      const detalle = Array.isArray(err.detalles) && err.detalles.length
+        ? ' — ' + err.detalles.join('; ') : '';
+      throw new Error((err.mensaje || `Error ${res.status}`) + detalle);
+    }
+    toast('Semillero registrado correctamente', 'ok');
+    resetForm();
+    cargarSemilleros();
+  } catch (err) {
+    console.error(err);
+    toast(err.message === 'Failed to fetch'
+      ? 'No se pudo conectar con la API'
+      : err.message, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Registrar semillero';
+  }
+}
+
+function resetForm() {
+  $('#semilleroForm').reset();
+  $('#lineasContainer').innerHTML = '';
+  $('#integrantesContainer').innerHTML = '';
+  $$('.field.invalid').forEach(f => f.classList.remove('invalid'));
+  addLinea(); addIntegrante();
+}
+
+/* ---------- GET: listar semilleros ---------- */
+async function cargarSemilleros() {
+  const list = $('#semillerosList');
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+    const items = await res.json();
+    renderSemilleros(items);
+  } catch (err) {
+    list.innerHTML = `<div class="empty"><span class="big">⚠️</span>No se pudo cargar la lista</div>`;
+    $('#countLabel').textContent = 'Sin conexión con la API';
+  }
+}
+
+/* Imagen de semillas aleatoria (1, 2 o 3) por tarjeta.
+   Se recuerda por ID para que no cambie al refrescar la lista. */
+const TOTAL_IMAGENES = 3;
+const semillaElegida = {};
+function pickSemilla(id) {
+  return semillaElegida[id] ??= Math.floor(Math.random() * TOTAL_IMAGENES) + 1;
+}
+
+function renderSemilleros(items) {
+  const list = $('#semillerosList');
+  $('#countLabel').textContent = `${items.length} semillero${items.length === 1 ? '' : 's'}`;
+  if (!items.length) {
+    list.innerHTML = `<div class="empty"><span class="big">🌱</span>Aún no hay semilleros registrados</div>`;
+    return;
+  }
+  list.innerHTML = items.map(s => `
+    <article class="sem-card" style="--semillas:url('semillas_${pickSemilla(s.id)}.png')">
+      <div class="sem-id">ID #${escapeHtml(s.id)}</div>
+      <div class="sem-sigla">${escapeHtml(s.sigla)}</div>
+      <div class="sem-meta">
+        <span class="chip">👥 ${escapeHtml(s.totalIntegrantes)}</span>
+        <span class="badge">${escapeHtml(s.estado)}</span>
+      </div>
+    </article>`).join('');
+}
+
+/* ---------- Init ---------- */
+$('#addLinea').onclick = () => addLinea();
+$('#addIntegrante').onclick = addIntegrante;
+$('#refreshBtn').onclick = cargarSemilleros;
+$('#semilleroForm').addEventListener('submit', crearSemillero);
+
+addLinea();
+addIntegrante();
+cargarSemilleros();
+</script>
 </body>
 </html>
