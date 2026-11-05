@@ -143,4 +143,14 @@ public class SemilleroService {
                 .map(semilleroMapper::toResponse)
                 .toList();
     }
+    
+    @Transactional
+    public void eliminarSemillero(Long id) {
+
+        if (!semilleroRepository.existsById(id)) {
+            throw new ReglaNegocioException("El semillero no existe");
+        }
+
+        semilleroRepository.deleteById(id);
+    }
 }
