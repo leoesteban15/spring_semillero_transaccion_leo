@@ -156,6 +156,15 @@
   /* se usa "top" en vez de "transform" para no romper el z-index de las semillas */
   .sem-card:hover{top:-3px;box-shadow:var(--shadow)}
   .sem-id{font-size:.72rem;color:var(--muted);font-weight:600}
+  .sem-top{display:flex;justify-content:space-between;align-items:center}
+  .btn-delete{
+    background:transparent;border:none;color:var(--muted);
+    width:34px;height:34px;border-radius:8px;
+    display:grid;place-items:center;cursor:pointer;transition:.15s;
+    margin:-6px -6px 0 0;
+  }
+  .btn-delete:hover{background:#fee2e2;color:var(--danger)}
+  .btn-delete:disabled{opacity:.5;cursor:wait}
   .sem-sigla{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin:6px 0 14px}
   .sem-meta{display:flex;justify-content:space-between;align-items:center}
   .chip{
@@ -498,7 +507,17 @@ function renderSemilleros(items) {
   }
   list.innerHTML = items.map(s => `
     <article class="sem-card" style="--semillas:url('semillas_${pickSemilla(s.id)}.png')">
-      <div class="sem-id">ID #${escapeHtml(s.id)}</div>
+      <div class="sem-top">
+        <div class="sem-id">ID #${escapeHtml(s.id)}</div>
+        <button type="button" class="btn-delete" data-id="${escapeHtml(s.id)}" title="Eliminar semillero" aria-label="Eliminar semillero">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+        </button>
+      </div>
       <div class="sem-sigla">${escapeHtml(s.sigla)}</div>
       <div class="sem-meta">
         <span class="chip">👥 ${escapeHtml(s.totalIntegrantes)}</span>
@@ -506,6 +525,34 @@ function renderSemilleros(items) {
       </div>
     </article>`).join('');
 }
+
+/* ---------- DELETE: eliminar semillero ---------- */
+async function eliminarSemillero(id, btn) {
+  if (!confirm('¿Eliminar este semillero? Esta acción no se puede deshacer.')) return;
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error('Respuesta del servidor:', res.status, err);
+      throw new Error(err.mensaje || `Error ${res.status}`);
+    }
+    toast('Semillero eliminado', 'ok');
+    cargarSemilleros();
+  } catch (err) {
+    console.error(err);
+    toast(err.message === 'Failed to fetch'
+      ? 'No se pudo conectar con la API'
+      : err.message, 'err');
+    btn.disabled = false;
+  }
+}
+
+// Un solo listener para todos los botones de basura (las tarjetas se redibujan)
+$('#semillerosList').addEventListener('click', e => {
+  const btn = e.target.closest('.btn-delete');
+  if (btn) eliminarSemillero(btn.dataset.id, btn);
+});
 
 /* ---------- Init ---------- */
 $('#addLinea').onclick = () => addLinea();
